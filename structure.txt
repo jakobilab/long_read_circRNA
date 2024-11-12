@@ -1,0 +1,22 @@
+deps:
+
+    bedtools
+    NanoFilt
+    pblat
+    perl
+    samtools
+
+
+
+blat_nanopore_v5.5.sh
+
+    blat_output_processing_v2.pl
+    combine_annot_segments.pl
+    make_circRNAs_from_annot.txt.pl
+    psl2bed12.pl
+
+
+novel_exons_and_alternative_usage_v7.0.sh
+
+    flank2_combine.pl
+    psl2bed12.pl
