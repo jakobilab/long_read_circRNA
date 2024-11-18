@@ -1,0 +1,22 @@
+circAtlas2.0_June2019_human_hg19_circRNA.0-based.bed -> download from circatlas / skip for release
+CIRCpedia_v2_June2019_human_hg19_All_circRNA.unique.bed  -> download from circatlas / skip for release
+hsa_circRNA_complete.hg19.unique.sort.length.bed -> This is circbase
+
+hg19.chrom.sizes -> standard genome file
+hg19.fa -> standard genome file
+hg19.fa.fai -> standard genome file
+hg19.phase.info.txt -> standard genome file
+
+# from UCSC browser, postprocessed refFlat files
+#
+Human_refFlat_exon_hg19_Oct2018.merge.bed
+Human_refFlat_exon_hg19_Oct2018.sort.bed
+Human_refFlat_hg19_Oct2018.unique.merge.bed
+
+# UCSC
+gencode.v37lift37.annotation.gffread.exon.bed <- UCSC gencode pseudogene table
+gencode.v37lift37.annotation.gffread.exon.merge.bed <- post processed from above
+
+#
+hg19_ucsc_Intron_Gencode_V34lift37.bed ->  must be from the same source than the top table | GENCODE lifted annotations from V34lift37 (Ensembl 100)
+UCSC-EST-exons_hg19_09-2018.bed -> post-processed all_est table from genome browser
