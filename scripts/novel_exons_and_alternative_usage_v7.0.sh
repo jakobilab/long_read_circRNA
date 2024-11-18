@@ -261,14 +261,17 @@ cat $sample.circRNA_candidates.annotated.txt | grep -v internal_circRNA_name | a
 # Remove introns that overlap an exon from Gencode
 bedtools subtract -a introns.uniq.bed -b exon_annotation.reformat.bed -nonamecheck | sortBed | uniq | awk 'OFS="\t"{print $1,$2,$3,$4"_"$1":"$2"-"$3,1,$6}' | sortBed > introns.uniq.exon_remove.bed
 
-echo "Getting read coverage in introns"
-## This was changed in v2 so the intron retention is now only searched in bsj spanning reads, not all reads as before
-bedtools coverage -bed -split -a introns.uniq.exon_remove.bed -b $sample.scan.circRNA.sort.bam > $sample.intron.coverage
-echo "extracting the introns with >50% of nt covered by reads"
-cat $sample.intron.coverage | awk '$10>0.5' > $sample.intron.coverage.50pct
-# CircRNAs with more than 1% intronic coverage, if harboring a >50% coverage intron this is shown in last column
-printf "internal_circRNA_name\tchr\tstart\tend\tBSJ_reads\tmean_read_coverage\tmean_intron_coverage\tintron_coverage\tcoverage_high_intron\n" > $sample.circRNA_intron_coverage.1pct.50pct_intron.txt
-cat $sample.circRNA_intron_coverage.1pct.txt | awk 'OFS="\t"{print $2,$3,$4,$1,$5,$6,$7,$8}' | sortBed | bedtools map -F 1.0 -c 10 -o max -a - -b $sample.intron.coverage.50pct | awk 'OFS="\t"{print $4,$1,$2,$3,$5,$6,$7,$8,$9}'  >> $sample.circRNA_intron_coverage.1pct.50pct_intron.txt
+
+
+
+#echo "Getting read coverage in introns"
+### This was changed in v2 so the intron retention is now only searched in bsj spanning reads, not all reads as before
+#bedtools coverage -bed -split -a introns.uniq.exon_remove.bed -b $sample.scan.circRNA.sort.bam > $sample.intron.coverage
+#echo "extracting the introns with >50% of nt covered by reads"
+#cat $sample.intron.coverage | awk '$10>0.5' > $sample.intron.coverage.50pct
+## CircRNAs with more than 1% intronic coverage, if harboring a >50% coverage intron this is shown in last column
+#printf "internal_circRNA_name\tchr\tstart\tend\tBSJ_reads\tmean_read_coverage\tmean_intron_coverage\tintron_coverage\tcoverage_high_intron\n" > $sample.circRNA_intron_coverage.1pct.50pct_intron.txt
+#cat $sample.circRNA_intron_coverage.1pct.txt | awk 'OFS="\t"{print $2,$3,$4,$1,$5,$6,$7,$8}' | sortBed | bedtools map -F 1.0 -c 10 -o max -a - -b $sample.intron.coverage.50pct | awk 'OFS="\t"{print $4,$1,$2,$3,$5,$6,$7,$8,$9}'  >> $sample.circRNA_intron_coverage.1pct.50pct_intron.txt
 
 
 bedtools coverage -a introns.uniq.exon_remove.bed -b $sample.psl.bed > $sample.introns.uniq.exon_remove.coverage.bed
@@ -290,7 +293,7 @@ cat $sample.circRNA_candidates.annotated.txt | grep -v internal_circRNA_name | a
 
 awk 'OFS="\t" {$13="."; print $0}' $sample.introns.uniq.exon_remove.coverage.onlyCirc.novelExonMap.bed  > $sample.introns.uniq.exon_remove.coverage.onlyCirc.novelExonMap.fixed.bed
 
-bedtools map -F 1.0 -c 10 -o max -a $sample.introns.uniq.exon_remove.coverage.onlyCirc.novelExonMap.fixed.bed -b $sample.intron.coverage.50pct > $sample.introns.uniq.exon_remove.coverage.onlyCirc.novelExonMap.intronCov.bed
+#bedtools map -F 1.0 -c 10 -o max -a $sample.introns.uniq.exon_remove.coverage.onlyCirc.novelExonMap.fixed.bed -b $sample.intron.coverage.50pct > $sample.introns.uniq.exon_remove.coverage.onlyCirc.novelExonMap.intronCov.bed
 
 echo
 echo "Number of introns"
