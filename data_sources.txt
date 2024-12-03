@@ -9,8 +9,8 @@ hg19.phase.info.txt -> standard genome file
 
 # from UCSC browser, postprocessed refFlat files
 #
-Human_refFlat_exon_hg19_Oct2018.merge.bed
-Human_refFlat_exon_hg19_Oct2018.sort.bed
+Human_refFlat_exon_hg19_Oct2018.merge.bed DONE
+Human_refFlat_exon_hg19_Oct2018.sort.bed DONE
 Human_refFlat_hg19_Oct2018.unique.merge.bed
 
 # UCSC
