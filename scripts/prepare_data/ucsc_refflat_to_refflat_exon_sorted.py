@@ -60,7 +60,18 @@ def process_refflat_file(file_path):
                     output_string += "\t".join([chrom,starts[exon_num],stops[exon_num],name_tag,str(0),strand]) + "\n"
 
         virtual_bed_file = pybedtools.BedTool(output_string, from_string=True)
-        print(virtual_bed_file.sort())
+
+        virtual_bed_file_sorted = virtual_bed_file.sort()
+
+        virtual_bed_file_merged = virtual_bed_file_sorted.merge(s=True, o= ["collapse","count","distinct"], c=[4,4,6])
+
+        file_base = file_path.replace(".gz","")
+
+        with open(file_base+".sort.bed", "w") as file:
+            file.write(str(virtual_bed_file_sorted))
+
+        with open(file_base+".merged.bed", "w") as file:
+            file.write(str(virtual_bed_file_merged ))
 
     except FileNotFoundError:
         print(f"Error: File '{file_path}' not found.")
