@@ -18,5 +18,5 @@ gencode.v37lift37.annotation.gffread.exon.bed <- UCSC gencode pseudogene table
 gencode.v37lift37.annotation.gffread.exon.merge.bed <- post processed from above
 
 #
-hg19_ucsc_Intron_Gencode_V34lift37.bed ->  must be from the same source than the top table | GENCODE lifted annotations from V34lift37 (Ensembl 100)
+hg19_ucsc_Intron_Gencode_V34lift37.bed ->  must be from the same source as the top table | GENCODE lifted annotations from V34lift37 (Ensembl 100)
 UCSC-EST-exons_hg19_09-2018.bed -> post-processed all_est table from genome browser
