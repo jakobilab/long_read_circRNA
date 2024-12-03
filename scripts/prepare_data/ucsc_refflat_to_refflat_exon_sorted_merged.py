@@ -40,7 +40,8 @@ def process_refflat_file(file_path):
     Args:
         file_path (str): Path to the input file.
     """
-    output_string = ""
+    output_exons = ""
+    output_genes = ""
 
     try:
         with gzip.open(file_path, mode='rt') as gz_file:
@@ -53,13 +54,26 @@ def process_refflat_file(file_path):
                 starts = exonStarts.split(',')
                 stops = exonEnds.split(',')
 
+                output_genes += "\t".join(
+                  [chrom, txStart, txEnd, geneName, str(0), strand]) + "\n"
+
                 for exon_num in range(int(exonCount)-1):
                     strand_tag  = "f" if strand == "+" else "r"
 
                     name_tag = "_".join([geneName,"exon",str(exon_num),str(0),chrom,str(int(starts[exon_num])+1),strand_tag])
-                    output_string += "\t".join([chrom,starts[exon_num],stops[exon_num],name_tag,str(0),strand]) + "\n"
 
-        virtual_bed_file = pybedtools.BedTool(output_string, from_string=True)
+                    output_genes += "\t".join([chrom,starts[exon_num],stops[exon_num],geneName,str(0),strand]) + "\n"
+                    #output_genes += "\t".join([chrom,starts[exon_num],stops[exon_num],name_tag,str(0),strand]) + "\n"
+                    output_exons += "\t".join([chrom,starts[exon_num],stops[exon_num],name_tag,str(0),strand]) + "\n"
+
+        virtual_bed_file = pybedtools.BedTool(output_exons, from_string=True)
+
+        virtual_bed_file_genes = pybedtools.BedTool(output_genes, from_string=True).sort()
+
+        # the unique gene level file is different in regard to printing out all genes with comma instead of just choosing one
+        # and omit the other co-optimal hits
+
+        virtual_bed_file_genes = virtual_bed_file_genes.merge(s=True, o= ["distinct","count_distinct","distinct"], c=[4,4,6])
 
         virtual_bed_file_sorted = virtual_bed_file.sort()
 
@@ -69,6 +83,9 @@ def process_refflat_file(file_path):
 
         with open(file_base+".sort.bed", "w") as file:
             file.write(str(virtual_bed_file_sorted))
+
+        with open(file_base+".unique.bed", "w") as file:
+            file.write(str(virtual_bed_file_genes))
 
         with open(file_base+".merged.bed", "w") as file:
             file.write(str(virtual_bed_file_merged ))
