@@ -22,13 +22,40 @@ import gzip
 import sys
 import pybedtools
 
+def get_id_from_column_9(input_string:str, entity:str):
 
-def read_annotation_file(annotation_file, entity="exon", string=False):
+    splits = input_string.strip().split(';')
+
+    feature_dict = {}
+
+    for split in splits:
+        item = split.strip().split(" ")
+        if len(item) == 2:
+            feature_dict[item[0]] = item[1].replace("\"","")
+
+    if entity in feature_dict:
+        return feature_dict[entity]
+    else:
+        return None
+
+
+def read_annotation_file(annotation_file, entity="exon"):
     """Reads a GTF file
     Will halt the program if file not accessible
     Returns a BedTool object only containing gene sections
     """
+    """
+    Reads a GTF file and outputs exons output used for the main script
 
+    Download (needs to be the version__lift__version file as GTF, e.g. v37):
+    https://www.gencodegenes.org/human/release_37lift37.html
+
+    Expected output (each line one exon):
+    chr1    11868   12227   DDX11L1 100     +       ENST00000456328.2_1     ENSG00000223972.5_4
+
+    Args:
+        annotation_file (str): Path to the GTF file.
+    """
     try:
         file_handle = open(annotation_file)
     except PermissionError:
@@ -56,40 +83,30 @@ def read_annotation_file(annotation_file, entity="exon", string=False):
                 if int(columns[4]) - int(columns[3]) == 0:
                     continue
 
-                # extract chromosome, start, stop, score(0), name and strand
-                # we hopefully have a gene name now and use this one for the entry
-
-
                 entry = [
                     columns[0],
                     columns[3],
                     columns[4],
-                    "name",
-                    str(0),
+                    get_id_from_column_9(columns[8], "gene_name"),
+                    "100",
                     columns[6],
+                    get_id_from_column_9(columns[8], "transcript_id"),
+                    get_id_from_column_9(columns[8], "gene_id")
                 ]
-                print(entry)
-
-                # TODO: function to split up additional arguments for gene id
 
                 # concatenate lines to one string
                 bed_content += '\t'.join(entry) + "\n"
 
-        # if not bed_content:
-        #     exit(-1)
-        #
-        # if string:
-        #     return bed_content
-        # else:
-        #     # create a "virtual" BED file
-        #     virtual_bed_file = pybedtools.BedTool(bed_content, from_string=True)
-        #     print("Start merging GTF file")
-        #
-        #     # we trust that bedtools >= 2.27 is installed. Otherwise this merge will probably fail
-        #     return virtual_bed_file.sort().merge(s=True,  # strand specific
-        #                                          c="4,5,6",
-        #                                          # copy columns 5 & 6
-        #                                          o="distinct,distinct,distinct")  # group
+        if not bed_content:
+            exit(-1)
+
+
+        # create a "virtual" BED file
+        virtual_bed_file = pybedtools.BedTool(bed_content, from_string=True)
+
+        return virtual_bed_file.sort()
+
+
 
 def process_gtf_file(file_path):
     """
@@ -131,7 +148,6 @@ def process_gtf_file(file_path):
                     name_tag = "_".join([geneName,"exon",str(exon_num),str(0),chrom,str(int(starts[exon_num])+1),strand_tag])
 
                     output_genes += "\t".join([chrom,starts[exon_num],stops[exon_num],geneName,str(0),strand]) + "\n"
-                    #output_genes += "\t".join([chrom,starts[exon_num],stops[exon_num],name_tag,str(0),strand]) + "\n"
                     output_exons += "\t".join([chrom,starts[exon_num],stops[exon_num],name_tag,str(0),strand]) + "\n"
 
         virtual_bed_file = pybedtools.BedTool(output_exons, from_string=True)
@@ -165,4 +181,18 @@ def process_gtf_file(file_path):
 
 
 if __name__ == "__main__":
-    read_annotation_file(sys.argv[1])
+    bed_file = read_annotation_file(sys.argv[1])
+
+    file_base = sys.argv[1].replace(".gtf", "")
+
+    with open(file_base + ".exon.bed", "w") as file:
+        file.write(str(bed_file))
+
+    virtual_bed_file_merged = bed_file.merge(s=True,
+                                             o=["collapse",
+                                                "count",
+                                                "distinct"],
+                                             c=[4, 4, 6])
+
+    with open(file_base + ".exon.merge.bed", "w") as file:
+        file.write(str(virtual_bed_file_merged))
