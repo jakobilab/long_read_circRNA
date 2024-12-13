@@ -8,14 +8,14 @@ hg19.chrom.sizes -> standard genome file -> https://hgdownload.soe.ucsc.edu/gold
 hg19.fa -> standard genome file -> https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/
 hg19.fa.fai -> standard genome file -> build with faidx
 
-# from UCSC browser, postprocessed refFlat files:
+# from UCSC browser, postprocessed refFlat files (base file download):
 https://genome.ucsc.edu/cgi-bin/hgTables?jsh_pageVertPos=0&clade=mammal&org=Human&db=hg38&hgta_group=allTables&hgta_track=hg38&hgta_table=refFlat&hgta_regionType=genome&hgta_outputType=primaryTable&boolshad.sendToGalaxy=0&boolshad.sendToGreat=0&hgta_outFileName=foo.gz&hgta_outSep=tab&hgta_compressType=gzip&hgta_doTopSubmit=Get+output
 
 Human_refFlat_exon_hg19_Oct2018.merge.bed -> DONE
 Human_refFlat_exon_hg19_Oct2018.sort.bed -> DONE
 Human_refFlat_hg19_Oct2018.unique.merge.bed -> DONE
 
-# GENCODE: https://www.gencodegenes.org/human/release_37lift37.html
+# GENCODE: https://www.gencodegenes.org/human/release_37lift37.html (base file download)
 
 gencode.v37lift37.annotation.gffread.exon.bed -> DONE
 -> via script
@@ -23,10 +23,10 @@ gencode.v37lift37.annotation.gffread.exon.bed -> DONE
 gencode.v37lift37.annotation.gffread.exon.merge.bed -> DONE
 -> via script
 
-hg19_ucsc_Intron_Gencode_V34lift37.bed:
+hg19_ucsc_Intron_Gencode_V34lift37.bed (file ready after download):
 
 https://genome.ucsc.edu/cgi-bin/hgTables?clade=mammal&org=Human&db=hg19&hgta_group=genes&hgta_track=wgEncodeGencodeV34lift37&hgta_table=0&hgta_regionType=genome&hgta_outFileName=test.gz.gz&hgta_ctVis=pack&hgta_ctUrl=&fbUpBases=200&fbExonBases=0&fbQual=intron&fbIntronBases=0&fbDownBases=200&hgta_doGetBed=get+BED&hgta_compressType=gzip
 
-UCSC-EST-exons_hg19_09-2018.bed:
+UCSC-EST-exons_hg19_09-2018.bed (file ready after download):
 
 https://genome.ucsc.edu/cgi-bin/hgTables?hgta_ctName=tb_all_est&hgta_ctUrl=&fbUpBases=200&fbQual=exon&fbExonBases=0&fbIntronBases=0&fbDownBases=200&hgta_doGetBed=get+BED&clade=mammal&org=Human&db=hg19&hgta_group=allTracks&hgta_track=intronEst&hgta_table=all_est&hgta_regionType=genome&hgta_outputType=bed&hgta_outFileName=test3.gz&hgta_compressType=gzip
