@@ -2,26 +2,28 @@
 dataset:
     hg19
 
-# fasta:
-#     url: https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.gz
-#     type: gz
-#     name: hg19.fa.gz
-#
-# chrom_size:
-#     url: https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/hg19.chrom.sizes
-#     type: plain
-#     name: hg19.chrom.sizes.fa.gz
+fasta:
+    url: https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.gz
+    type: gz
+    name: hg19.fa.gz
 
-# ref_flat:
-#     url: https://genome.ucsc.edu/cgi-bin/hgTables?jsh_pageVertPos=0&clade=mammal&org=Human&db=hg38&hgta_group=allTables&hgta_track=hg19&hgta_table=refFlat&hgta_regionType=genome&hgta_outputType=primaryTable&boolshad.sendToGalaxy=0&boolshad.sendToGreat=0&hgta_outFileName=foo.gz&hgta_outSep=tab&hgta_compressType=gzip&hgta_doTopSubmit=Get+output
-#     type: gz
-#     name: refFlat.csv.gz
+chrom_size:
+    url: https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/hg19.chrom.sizes
+    type: plain
+    name: hg19.chrom.sizes.fa
 
-# gencode_exon:
-#     url: https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_37/GRCh37_mapping/gencode.v37lift37.annotation.gtf.gz
-#     type: gz
-#     name: gencode.v37lift37.annotation.gtf.gz
-#
+ref_flat:
+    url: https://genome.ucsc.edu/cgi-bin/hgTables?jsh_pageVertPos=0&clade=mammal&org=Human&db=hg38&hgta_group=allTables&hgta_track=hg19&hgta_table=refFlat&hgta_regionType=genome&hgta_outputType=primaryTable&boolshad.sendToGalaxy=0&boolshad.sendToGreat=0&hgta_outFileName=foo.gz&hgta_outSep=tab&hgta_compressType=gzip&hgta_doTopSubmit=Get+output
+    type: gz
+    name: refFlat.csv.gz
+    postprocess: ref_flat
+
+gencode_exon:
+    url: https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_37/GRCh37_mapping/gencode.v37lift37.annotation.gtf.gz
+    type: gz
+    name: gencode.v37lift37.annotation.gtf.gz
+    postprocess: gencode
+
 gencode_intron:
     url: https://genome.ucsc.edu/cgi-bin/hgTables?clade=mammal&org=Human&db=hg19&hgta_group=genes&hgta_track=wgEncodeGencodeV34lift37&hgta_table=0&hgta_regionType=genome&hgta_outFileName=test.gz.gz&hgta_ctVis=pack&hgta_ctUrl=&fbUpBases=200&fbExonBases=0&fbQual=intron&fbIntronBases=0&fbDownBases=200&hgta_doGetBed=get+BED&hgta_compressType=gzip
     type: gz
