@@ -120,8 +120,7 @@ def read_annotation_file(annotation_file, entity="exon"):
         return virtual_bed_file.sort()
 
 
-
-def process_gtf_file(file_path):
+def postprocess_ref_flat(refflat_csv: str):
     """
     Reads a refFlat file dumped by UCSC Genome Browser and outputs sorted
     exon output used for the main script
@@ -137,12 +136,14 @@ def process_gtf_file(file_path):
 
     Args:
         file_path (str): Path to the input file.
+        :param refflat_csv:
     """
     output_exons = ""
     output_genes = ""
 
+    print("Creating refFlat-based exon files")
     try:
-        with gzip.open(file_path, mode='rt') as gz_file:
+        with gzip.open(refflat_csv, mode='rt') as gz_file:
             csv_reader = csv.reader(gz_file, delimiter='\t')
             next(csv_reader, None)
 
@@ -176,7 +177,7 @@ def process_gtf_file(file_path):
 
         virtual_bed_file_merged = virtual_bed_file_sorted.merge(s=True, o= ["collapse","count","distinct"], c=[4,4,6])
 
-        file_base = file_path.replace(".gz","")
+        file_base = refflat_csv.replace(".gz", "")
 
         with open(file_base+".sort.bed", "w") as file:
             file.write(str(virtual_bed_file_sorted))
@@ -188,89 +189,19 @@ def process_gtf_file(file_path):
             file.write(str(virtual_bed_file_merged ))
 
     except FileNotFoundError:
-        print(f"Error: File '{file_path}' not found.")
-    except Exception as e:
-        print(f"An error occurred: {e}")
-
-
-def process_refflat_file(file_path):
-    """
-    Reads a refFlat file dumped by UCSC Genome Browser and outputs sorted
-    exon output used for the main script
-
-    refFlat schema:
-    https://genome.ucsc.edu/cgi-bin/hgTables?hgta_doSchemaDb=hg38&hgta_doSchemaTable=refFlat
-
-    Expected output:
-    chr1    11868   12227   LOC102725121_exon_0_0_chr1_11869_f      0       +
-
-    name = genename + exon # + 0 + chr + start+1 + strand (f or r)
-
-
-    Args:
-        file_path (str): Path to the input file.
-    """
-    output_exons = ""
-    output_genes = ""
-
-    try:
-        with gzip.open(file_path, mode='rt') as gz_file:
-            csv_reader = csv.reader(gz_file, delimiter='\t')
-            next(csv_reader, None)
-
-            for row_number, row in enumerate(csv_reader, start=1):
-                geneName, name, chrom, strand, txStart, txEnd, cdsStart, cdsEnd, exonCount, exonStarts, exonEnds = row
-
-                starts = exonStarts.split(',')
-                stops = exonEnds.split(',')
-
-                output_genes += "\t".join(
-                  [chrom, txStart, txEnd, geneName, str(0), strand]) + "\n"
-
-                for exon_num in range(int(exonCount)-1):
-                    strand_tag  = "f" if strand == "+" else "r"
-
-                    name_tag = "_".join([geneName,"exon",str(exon_num),str(0),chrom,str(int(starts[exon_num])+1),strand_tag])
-
-                    output_genes += "\t".join([chrom,starts[exon_num],stops[exon_num],geneName,str(0),strand]) + "\n"
-                    #output_genes += "\t".join([chrom,starts[exon_num],stops[exon_num],name_tag,str(0),strand]) + "\n"
-                    output_exons += "\t".join([chrom,starts[exon_num],stops[exon_num],name_tag,str(0),strand]) + "\n"
-
-        virtual_bed_file = pybedtools.BedTool(output_exons, from_string=True)
-
-        virtual_bed_file_genes = pybedtools.BedTool(output_genes, from_string=True).sort()
-
-        # the unique gene level file is different in regard to printing out all genes with comma instead of just choosing one
-        # and omit the other co-optimal hits
-
-        virtual_bed_file_genes = virtual_bed_file_genes.merge(s=True, o= ["distinct","count_distinct","distinct"], c=[4,4,6])
-
-        virtual_bed_file_sorted = virtual_bed_file.sort()
-
-        virtual_bed_file_merged = virtual_bed_file_sorted.merge(s=True, o= ["collapse","count","distinct"], c=[4,4,6])
-
-        file_base = file_path.replace(".gz","")
-
-        with open(file_base+".sort.bed", "w") as file:
-            file.write(str(virtual_bed_file_sorted))
-
-        with open(file_base+".unique.bed", "w") as file:
-            file.write(str(virtual_bed_file_genes))
-
-        with open(file_base+".merged.bed", "w") as file:
-            file.write(str(virtual_bed_file_merged ))
-
-    except FileNotFoundError:
-        print(f"Error: File '{file_path}' not found.")
+        print(f"Error: File '{refflat_csv}' not found.")
     except Exception as e:
         print(f"An error occurred: {e}")
 
 
 
-def gencode():
-    bed_file = read_annotation_file(sys.argv[1])
+def postprocess_gencode(gencode_file: str):
 
-    file_base = sys.argv[1].replace(".gtf", "")
+    print("Creating GENCODE-based exon files")
+
+    bed_file = read_annotation_file(gencode_file)
+
+    file_base = gencode_file.replace(".gtf", "")
 
     with open(file_base + ".exon.bed", "w") as file:
         file.write(str(bed_file))
@@ -285,8 +216,8 @@ def gencode():
         file.write(str(virtual_bed_file_merged))
 
 def process_data(configuration: str, data_path: str):
-    with open(configuration, 'r') as f:
-        config = (yaml.safe_load(f))
+    with open(configuration, 'r') as config_file:
+        config = (yaml.safe_load(config_file))
 
         full_data_path=os.path.join(data_path, config['dataset'])
 
@@ -317,7 +248,7 @@ def process_data(configuration: str, data_path: str):
 
                             with open(file_name, 'wb') as f:
                                 with tqdm(total=total_size, unit='B',
-                                          unit_scale=True, desc=file_name) as pbar:
+                                          unit_scale=True, desc="Downloading " + config[item]['name']) as pbar:
                                     for chunk in r.iter_content(chunk_size=8192):
                                         f.write(chunk)
                                         pbar.update(len(chunk))
@@ -328,8 +259,19 @@ def process_data(configuration: str, data_path: str):
                             os.system("gzip -d " + file_name)
                             print("Done.")
 
-                        if 'postprocess' in config[item]:
-                            print("doing post")
+                        # work on the gencode file
+                        if 'postprocess' in config[item] and \
+                                config[item]['postprocess'] == 'gencode':
+
+                            postprocess_gencode(gencode_file=file_name_unzipped)
+
+                        # work with the refFlat file
+                        if 'postprocess' in config[item] and \
+                                config[item]['postprocess'] == 'refFlat':
+
+                            postprocess_ref_flat(refflat_csv=file_name_unzipped)
+
+
 
                     # file already exists
                     else:
