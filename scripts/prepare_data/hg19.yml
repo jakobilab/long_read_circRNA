@@ -10,7 +10,7 @@ fasta:
 chrom_size:
     url: https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/hg19.chrom.sizes
     type: plain
-    name: hg19.chrom.sizes.fa
+    name: hg19.chrom.sizes
 
 ref_flat:
     url: https://genome.ucsc.edu/cgi-bin/hgTables?jsh_pageVertPos=0&clade=mammal&org=Human&db=hg38&hgta_group=allTables&hgta_track=hg19&hgta_table=refFlat&hgta_regionType=genome&hgta_outputType=primaryTable&boolshad.sendToGalaxy=0&boolshad.sendToGreat=0&hgta_outFileName=foo.gz&hgta_outSep=tab&hgta_compressType=gzip&hgta_doTopSubmit=Get+output
