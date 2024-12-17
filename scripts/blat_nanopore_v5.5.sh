@@ -87,13 +87,13 @@ rm $sample.psl
 mv $sample.temp.psl $sample.psl
 cat $sample.psl | awk '{print $10}' | sort | uniq -c | sort -nrk 1,1 > mappings_per_read.txt
 cat mappings_per_read.txt | awk '{print $1}' | uniq -c | sort -nrk 1,1 > $sample.histogram_number_of_genomic_hits_per_read.txt
-cat $sample.psl | perl $scriptFolder/psl2bed12.pl | sortBed > $sample.psl.bed
 
+cat $sample.psl | python3 $scriptFolder/psl2bed12.py | sortBed > $sample.psl.bed
 
 echo
 date
 echo "Getting group numbers"
-cat $sample.psl | perl $scriptFolder/blat_output_processing_v2.pl > $sample.scan.psl
+cat $sample.psl | python3 $scriptFolder/blat_output_processing_v3.py > $sample.scan.psl
 
 # Read fragment numbers
 echo
@@ -112,7 +112,7 @@ cat $sample.scan.psl | awk '{print $10,$NF}' | sort | uniq | awk '{print $NF}' |
 head -5 $sample.scan.psl > $sample.scan.circRNA.psl
 grep circRNA $sample.scan.psl >> $sample.scan.circRNA.psl
 ## converting psl to bed12
-cat $sample.scan.circRNA.psl | perl $scriptFolder/psl2bed12.pl | sortBed > $sample.scan.circRNA.psl.bed
+cat $sample.scan.circRNA.psl |python3 $scriptFolder/psl2bed12.py | sortBed > $sample.scan.circRNA.psl.bed
 
 
 
@@ -141,7 +141,7 @@ echo "outputting Potential_multi-round_circRNA"
 head -5 $sample.scan.psl > $sample.scan.Potential_multi-round_circRNA.psl
 grep Potential_multi-round_circRNA $sample.scan.psl >> $sample.scan.Potential_multi-round_circRNA.psl
 ## converting psl to bed12
-cat $sample.scan.Potential_multi-round_circRNA.psl | perl $scriptFolder/psl2bed12.pl | sortBed > $sample.scan.Potential_multi-round_circRNA.psl.bed
+cat $sample.scan.Potential_multi-round_circRNA.psl |python3 $scriptFolder/psl2bed12.py | sortBed > $sample.scan.Potential_multi-round_circRNA.psl.bed
 bedtools bedtobam -i $sample.scan.Potential_multi-round_circRNA.psl.bed -bed12 -g $genomeSize > $sample.scan.Potential_multi-round_circRNA.bam
 samtools sort $sample.scan.Potential_multi-round_circRNA.bam > $sample.scan.Potential_multi-round_circRNA.sort.bam
 samtools index $sample.scan.Potential_multi-round_circRNA.sort.bam
@@ -186,8 +186,8 @@ rm $sample.scan.circRNA.psl.annot.0*.bed
 
 
 printf "#chr\tstart\tend\tread_name\tread_length\tgene_coverage\texon_coverage\tEST_coverage\tintron_coverage\n" > $sample.scan.circRNA.psl.annot.txt
-cat $sample.scan.circRNA.psl.annot.bed | sort -k 4,4 -T $temp_sort | awk 'OFS="\t"{print $1,$2,$3,$4,$3-$2,($3-$2)*$8,($3-$2)*$10,($3-$2)*$12,($3-$2)*$8-($3-$2)*$10}' | perl $scriptFolder/combine_annot_segments.pl >> $sample.scan.circRNA.psl.annot.txt
-cat $sample.scan.circRNA.psl.annot.txt | perl $scriptFolder/make_circRNAs_from_annot.txt.pl > $sample.scan.circRNA.psl.annot.combine.txt
+cat $sample.scan.circRNA.psl.annot.bed | sort -k 4,4 -T $temp_sort | awk 'OFS="\t"{print $1,$2,$3,$4,$3-$2,($3-$2)*$8,($3-$2)*$10,($3-$2)*$12,($3-$2)*$8-($3-$2)*$10}' | python3 $scriptFolder/combine_annot_segments.py >> $sample.scan.circRNA.psl.annot.txt
+cat $sample.scan.circRNA.psl.annot.txt | python3 $scriptFolder/make_circRNAs_from_annot.txt.py > $sample.scan.circRNA.psl.annot.combine.txt
 
 echo
 date
