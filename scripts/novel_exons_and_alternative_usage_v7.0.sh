@@ -59,8 +59,8 @@ bedtools merge -s -d 10 -c 4,6 -o distinct -i $sample.scan.circRNA.psl.split.bed
 #cat $genomeSize
 bedtools flank -g $genomeSize -b 2 -i $sample.scan.circRNA.psl.split.merge.bed > $sample.scan.circRNA.psl.split.merge.flank2.bed
 bedtools getfasta -nameOnly -fi $fa -bed $sample.scan.circRNA.psl.split.merge.flank2.bed -fo $sample.scan.circRNA.psl.split.merge.flank2.fa
-cat $sample.scan.circRNA.psl.split.merge.flank2.fa | sed ':a;N;$!ba;s/+\n/+\t/g' | sed ':a;N;$!ba;s/-\n/-\t/g' | sed 's/^>//g' | perl $scriptFolder/flank2_combine.pl > $sample.scan.circRNA.psl.split.merge.flank2.fa.bed
-cat $sample.scan.circRNA.psl.split.merge.flank2.fa | sed ':a;N;$!ba;s/+\n/+\t/g' | sed ':a;N;$!ba;s/-\n/-\t/g' | sed 's/^>//g' | perl $scriptFolder/flank2_combine.pl | awk 'OFS="\t"{print $6,$7}' | sort | uniq -c | sort -nrk 1,1 > $sample.scan.circRNA.psl.split.merge.flank2.fa.bed.count
+cat $sample.scan.circRNA.psl.split.merge.flank2.fa | sed ':a;N;$!ba;s/+\n/+\t/g' | sed ':a;N;$!ba;s/-\n/-\t/g' | sed 's/^>//g' | python3 $scriptFolder/flank2_combine.py > $sample.scan.circRNA.psl.split.merge.flank2.fa.bed
+cat $sample.scan.circRNA.psl.split.merge.flank2.fa | sed ':a;N;$!ba;s/+\n/+\t/g' | sed ':a;N;$!ba;s/-\n/-\t/g' | sed 's/^>//g' | python3 $scriptFolder/flank2_combine.py | awk 'OFS="\t"{print $6,$7}' | sort | uniq -c | sort -nrk 1,1 > $sample.scan.circRNA.psl.split.merge.flank2.fa.bed.count
 cat $sample.scan.circRNA.psl.split.merge.flank2.fa.bed | grep -P "AGGT$" > $sample.scan.circRNA.psl.split.merge.flank2.AGGT.bed
 cat $sample.scan.circRNA.psl.split.merge.flank2.fa.bed | grep -P "ACCT$" > $sample.scan.circRNA.psl.split.merge.flank2.ACCT.bed
 cat $sample.scan.circRNA.psl.split.merge.flank2.AGGT.bed | awk 'OFS="\t"{print $1,$2,$3}' | sort -nk 3,3 | sort -nk 2,2 | sort -k 1,1 | uniq -c | awk 'OFS="\t"{print $2,$3,$4,"novelExon",$1,"+"}' | sortBed > $sample.scan.circRNA.psl.split.merge.flank2.posExons.bed
