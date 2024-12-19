@@ -220,15 +220,27 @@ bedtools map -s -c 4 -o distinct -a base_list_exon-match.bed -b $mRNA -nonameche
 #intersectBed -wao -f 0.5 -s -a base_list_exon-match.bed -b $mRNA | awk 'OFS="\t"{$NF=""; print $0}' | awk 'OFS="\t"{$NF=""; print $0}' | awk 'OFS="\t"{$NF=""; print $0}' | awk 'OFS="\t"{print $NF,$0}' | awk 'OFS="\t"{$NF=""; print $0}' | awk 'OFS="\t"{$NF=""; print $0}' | awk 'OFS="\t"{$NF=""; print $0}' | awk 'OFS="\t"{$NF=""; print $0}' | awk 'OFS="\t"{print $0,$1}' | awk 'BEGIN{FS=OFS="\t"}{$1="";sub("\t","")}1' | sed s'/\t\t/\t/g' > base_list_exon-match.temp
 # finding antisense genes: ANY overlap of circRNA with an annotated refSeq gene on the ANTISENSE strand
 #intersectBed -wao -S -a base_list_exon-match.temp -b $mRNA | awk 'OFS="\t"{$NF=""; print $0}' | awk 'OFS="\t"{$NF=""; print $0}' | awk 'OFS="\t"{$NF=""; print $0}' | awk 'OFS="\t"{print $NF,$0}' | awk 'OFS="\t"{$NF=""; print $0}' | awk 'OFS="\t"{$NF=""; print $0}' | awk 'OFS="\t"{$NF=""; print $0}' | awk 'OFS="\t"{$NF=""; print $0}' | awk 'OFS="\t"{print $0,$1}' | awk 'BEGIN{FS=OFS="\t"}{$1="";sub("\t","")}1' | sed 's/\t\t/\t/'g > base_list_exon-match.temp2
+
+touch empty
+
 # Mapping circBase ID
 bedtools map -f 1.0 -F 1.0 -c 4 -o distinct -a base_list_exon-match.temp -b $circBase -nonamecheck | awk '!($0 in a) {a[$0];print}' > base_list_exon-match.temp2.bed
 # Mapping circAtlas
 bedtools map -f 1.0 -F 1.0 -c 4 -o distinct -a base_list_exon-match.temp2.bed -b $circAtlas -nonamecheck | awk '!($0 in a) {a[$0];print}' > base_list_exon-match.temp3.bed
 # Mapping CIRCpedia
-bedtools map -f 1.0 -F 1.0 -c 4 -o distinct -a base_list_exon-match.temp3.bed -b $CIRCpedia -nonamecheck | awk '!($0 in a) {a[$0];print}' > base_list_exon-match.temp4.bed
+bedtools map -f 1.-F 1.0 -c 4 -o distinct -a base_list_exon-match.temp3.bed -b $CIRCpedia -nonamecheck | awk '!($0 in a) {a[$0];print}' > base_list_exon-match.temp4.bed
+
+
+# print out 3 dots for each db, do we do not loose anything
+
+cp base_list_exon-match.temp4.bed /tmp/circ
 
 # Mapping stuff on to the base list
 bedtools map -f 1.0 -F 1.0 -c 4,7,8,9,10,11,5,5,5 -o count,mean,mean,mean,mean,mean,min,max,mean -a base_list_exon-match.temp4.bed -b $sample.scan.circRNA.psl.annot.combine.correct.full.bed -nonamecheck | awk 'OFS="\t"{print $1,$2,$3,$4,$11,$6,$7,$8,$9,$10,$12,$13,$14,$15,$16,$17,$18,$19}' | sort -nrk 5,5 > base_list_exon-match.annot.prefilter.bed
+
+cp base_list_exon-match.annot.prefilter.bed /tmp/circ2
+
+
 echo
 #echo "Removing exon_match in chrM base_list_exon-match"
 #grep chrM base_list_exon-match.annot.prefilter.bed | wc -l
@@ -245,6 +257,8 @@ rm base_list_exon-match.temp base_list_exon-match.temp3.bed base_list_exon-match
 cat $sample.scan.circRNA.psl.annot.combine.txt | sortBed > $sample.scan.circRNA.psl.annot.combine.sort.txt
 # finding host gene: Any overlap of the circRNA with an annotated refSeq gene on either
 intersectBed -wao -a $sample.scan.circRNA.psl.annot.combine.sort.txt -b $mRNA -nonamecheck | awk 'OFS="\t"{$NF=""; print $0}' | awk 'OFS="\t"{$NF=""; print $0}' | awk 'OFS="\t"{$NF=""; print $0}' | awk 'OFS="\t"{print $NF,$0}' | awk 'OFS="\t"{$NF=""; print $0}' | awk 'OFS="\t"{$NF=""; print $0}' | awk 'OFS="\t"{$NF=""; print $0}' | awk 'OFS="\t"{$NF=""; print $0}' | awk 'OFS="\t"{print $0,$1}' | awk 'BEGIN{FS=OFS="\t"}{$1="";sub("\t","")}1' | sed s'/\t\t/\t/g' > $sample.scan.circRNA.psl.annot.combine.sort.temp
+
+cp $sample.scan.circRNA.psl.annot.combine.sort.temp /tmp/circ3
 
 
 ## FIX in v 5.5! (was potentially misannotation long circRNAs like RMST)

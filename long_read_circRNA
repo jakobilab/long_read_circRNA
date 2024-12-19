@@ -75,12 +75,12 @@ Available subcommands:
                 reference_path, os.path.dirname(reference_path)
             ))
         # Check if reference_path + species exists
-        if not os.path.exists(os.path.join(reference_path, species)):
-            raise Exception("The species subpath {} in the directory {} does not exists".format(species, reference_path))
-        # Check if the reference_path + species is a directory
-        if not os.path.isdir(os.path.join(reference_path, species)):
-            raise Exception("The species subpath {} in the directory {} is not a directory!".format(species, reference_path))
-        
+        # if not os.path.exists(os.path.join(reference_path, species)):
+        #     raise Exception("The species subpath {} in the directory {} does not exists".format(species, reference_path))
+        # # Check if the reference_path + species is a directory
+        # if not os.path.isdir(os.path.join(reference_path, species)):
+        #     raise Exception("The species subpath {} in the directory {} is not a directory!".format(species, reference_path))
+        #
         # Check if sample exists
         if not os.path.exists(args.sample):
             raise Exception("Sample file '{}' does not exist!".format(args.sample))
