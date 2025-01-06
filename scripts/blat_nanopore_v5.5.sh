@@ -109,19 +109,19 @@ cat $sample.scan.circRNA.psl |python3 $scriptFolder/psl2bed12.py | sortBed > $sa
 echo
 echo "Making bam and bigWig (.bw) files for use in genome browsers"
 # All Blat mapped reads
-#bedtools bedtobam -i $sample.psl.bed -bed12 -g $genomeSize > $sample.bam
-#samtools sort $sample.bam > $sample.sort.bam
-#samtools index $sample.sort.bam
-#rm $sample.bam
-#bamCoverage --binSize 1 --numberOfProcessors 8 -b $sample.sort.bam -o $sample.bw
-#
-## Blat mapped BSJ spanning reads
-#bedtools bedtobam -i $sample.scan.circRNA.psl.bed -bed12 -g $genomeSize > $sample.circRNA.bam
-#samtools sort $sample.circRNA.bam > $sample.circRNA.sort.bam
-#samtools index $sample.circRNA.sort.bam
-#rm $sample.circRNA.bam
-#bamCoverage --binSize 1 --numberOfProcessors 8 -b $sample.circRNA.sort.bam -o $sample.circRNA.bw
-#
+bedtools bedtobam -i $sample.psl.bed -bed12 -g $genomeSize > $sample.bam
+samtools sort $sample.bam > $sample.sort.bam
+samtools index $sample.sort.bam
+rm $sample.bam
+bamCoverage --binSize 1 --numberOfProcessors 8 -b $sample.sort.bam -o $sample.bw
+
+# Blat mapped BSJ spanning reads
+bedtools bedtobam -i $sample.scan.circRNA.psl.bed -bed12 -g $genomeSize > $sample.circRNA.bam
+samtools sort $sample.circRNA.bam > $sample.circRNA.sort.bam
+samtools index $sample.circRNA.sort.bam
+rm $sample.circRNA.bam
+bamCoverage --binSize 1 --numberOfProcessors 8 -b $sample.circRNA.sort.bam -o $sample.circRNA.bw
+
 
 
 echo
@@ -207,13 +207,10 @@ cat temp_exon-ends_nohit | sed 's/~/\t/g' | awk 'OFS="\t"{print $1}' | sort | un
 ### For the base_list_exon-match.bed file
 # finding host gene: Any overlap of the circRNA with an annotated refSeq gene on the SENSE strand
 bedtools map -s -c 4 -o distinct -a base_list_exon-match.bed -b $mRNA -nonamecheck > base_list_exon-match.temp
-cp  base_list_exon-match.temp /tmp/circ0
 
 awk '{print $0"\t.\t.\t."}' base_list_exon-match.temp > base_list_exon-match.temp4.bed
 
 # print out 3 dots for each db, do we do not loose anything
-
-cp base_list_exon-match.temp4.bed /tmp/circ
 
 # Mapping stuff on to the base list
 bedtools map -f 1.0 -F 1.0 -c 4,7,8,9,10,11,5,5,5 -o count,mean,mean,mean,mean,mean,min,max,mean -a base_list_exon-match.temp4.bed -b $sample.scan.circRNA.psl.annot.combine.correct.full.bed -nonamecheck | awk 'OFS="\t"{print $1,$2,$3,$4,$11,$6,$7,$8,$9,$10,$12,$13,$14,$15,$16,$17,$18,$19}' | sort -nrk 5,5 > base_list_exon-match.annot.prefilter.bed
@@ -267,8 +264,6 @@ cat temp.circ.hits >> $sample.circRNA_candidates.annotated.bed
         done < $sample.circRNA_candidates.annotated.bed
 	paste circRNA_name.temp $sample.circRNA_candidates.annotated.bed > $sample.circRNA_candidates.annotated.txt
 
-
-cp $sample.circRNA_candidates.annotated.txt /tmp/circ99
 
 #### for the reads that do not match exons and also does not have 99% similarity to known circRNAs
 cat no_exon_match_reads.bed | uniq | grep "\.[[:space:]]\.[[:space:]]\." | sortBed > no_exon_no_circRNA.bed
