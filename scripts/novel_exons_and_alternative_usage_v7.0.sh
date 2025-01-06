@@ -117,8 +117,6 @@ rm reads.annot.temp.bed temp.genomic-exons.bed $sample.scan.circRNA.psl.split.me
 rm $sample.scan.circRNA.psl.annot.combine.sort.txt
 
 
-
-
 echo "Starting the list with number of used exons for each circRNA"
 date
 tmp_dir=$(mktemp -d -t job-XXXXXXXXXX)
@@ -126,9 +124,6 @@ cat $sample.scan.circRNA.psl.genomic-exons.annot.bed | awk 'OFS="\t"{print $13,$
 cat temp1 | sort -k 2,2 -T $tmp_dir > temp2
 cat temp2 | sort -k 3,3 -T $tmp_dir | uniq -c > $sample.scan.circRNA.psl.genomic-exons.annot.uniq.bed
 rm -rf $tmp_dir
-
-
-
 
 ## New major improvement in version 6.1:
 input=$sample.scan.circRNA.psl.genomic-exons.annot.uniq.bed
@@ -181,14 +176,6 @@ done < circRNA-list
 
 echo
 
-
-#cat circRNA_exon_usage.txt | awk '$2>9' | awk '$4<0.9' | awk '$4>0.1' > circRNA_alternative_exon_usage.txt
-#wc -l circRNA_exon_usage.txt circRNA_alternative_exon_usage.txt
-#
-#mkdir DELETE
-#mv core_circ_grep.sh-*.out DELETE
-#mv *.circRNA_exon_usage.txt DELETE
-
 ### after novel exons and alternative usage
 cat exon_usage_data/*.circRNA_exon_usage.txt | sort -k 5,5 | sort -k 1,1 | uniq > $sample.circRNA_exon_usage.txt
 # Filter to only keep rows with 5 columns. These are the real hits:
@@ -209,14 +196,8 @@ rm coordinate.temp start_end_size $sample.circ_circRNA_exon_usage_length_of_exon
 
 
 echo "Done with novel exons and alternative usage"
-#echo "... Doing extra stuff v2"
 echo
 date
-
-
-
-
-
 
 
 ### Extra stuff v2
@@ -224,9 +205,6 @@ date
 ## Remove empty columns in circRNA candicates file:
 mv $sample.circRNA_candidates.annotated.txt OLD.$sample.circRNA_candidates.annotated.txt
 grep -v [[:space:]]0[[:space:]][+-][[:space:]]\.[[:space:]]\.[[:space:]]\.[[:space:]]\.[[:space:]]\. OLD.$sample.circRNA_candidates.annotated.txt > $sample.circRNA_candidates.annotated.txt
-
-
-#wc -l OLD.$sample.circRNA_candidates.annotated.txt $sample.circRNA_candidates.annotated.txt
 
 
 ## Finding circRNAs with at least 10 reads that have more than 10% intronic read coverage
@@ -245,11 +223,6 @@ echo "These could be either intron retention or due to unannotated exon(s)"
 echo
 
 
-#echo "Cryptic novel exon comparison to annotated exons?"
-#
-#echo "novel exon sequences"
-
-
 echo "Map read coverage on intron sequences"
 echo "Get introns in circRNAs"
 echo "This part was changed in v2"
@@ -260,18 +233,6 @@ cat $sample.circRNA_candidates.annotated.txt | grep -v internal_circRNA_name | a
 
 # Remove introns that overlap an exon from Gencode
 bedtools subtract -a introns.uniq.bed -b exon_annotation.reformat.bed -nonamecheck | sortBed | uniq | awk 'OFS="\t"{print $1,$2,$3,$4"_"$1":"$2"-"$3,1,$6}' | sortBed > introns.uniq.exon_remove.bed
-
-
-
-
-#echo "Getting read coverage in introns"
-### This was changed in v2 so the intron retention is now only searched in bsj spanning reads, not all reads as before
-#bedtools coverage -bed -split -a introns.uniq.exon_remove.bed -b $sample.scan.circRNA.sort.bam > $sample.intron.coverage
-#echo "extracting the introns with >50% of nt covered by reads"
-#cat $sample.intron.coverage | awk '$10>0.5' > $sample.intron.coverage.50pct
-## CircRNAs with more than 1% intronic coverage, if harboring a >50% coverage intron this is shown in last column
-#printf "internal_circRNA_name\tchr\tstart\tend\tBSJ_reads\tmean_read_coverage\tmean_intron_coverage\tintron_coverage\tcoverage_high_intron\n" > $sample.circRNA_intron_coverage.1pct.50pct_intron.txt
-#cat $sample.circRNA_intron_coverage.1pct.txt | awk 'OFS="\t"{print $2,$3,$4,$1,$5,$6,$7,$8}' | sortBed | bedtools map -F 1.0 -c 10 -o max -a - -b $sample.intron.coverage.50pct | awk 'OFS="\t"{print $4,$1,$2,$3,$5,$6,$7,$8,$9}'  >> $sample.circRNA_intron_coverage.1pct.50pct_intron.txt
 
 
 bedtools coverage -a introns.uniq.exon_remove.bed -b $sample.psl.bed > $sample.introns.uniq.exon_remove.coverage.bed
@@ -339,33 +300,4 @@ then
 else
         echo "Keeping all of the temporary output files"
 fi
-
-
-#echo "Liftover"
-#### Mouse data
-##chain=/home/mtv/ucsc/mm10ToHg19.over.chain
-##lift=mm10ToHg19
-##comparison_dataset=
-#
-### Human data
-#chain=/home/mtv/ucsc/hg19ToMm10.over.chain
-#lift=hg19ToMm10
-#comparison_dataset=/home/mtv/faststorage/Karim/old_mBr_circ/old_mBr_circ.circRNA_candidates.annotated.bed
-#
-##awk 'OFS="\t"{if(NR>1) print $1,$2,$3}' $sample.no_exon_no_circRNA.annotated.bed > no_exon_no_circRNA.annotated.forLiftOver.bed
-##liftOver no_exon_no_circRNA.annotated.forLiftOver.bed $chain no_exon_no_circRNA.annotated.$lift.bed no_exon_no_circRNA.annotated.$lift-unmapped.bed
-#
-#awk 'OFS="\t"{if(NR>1) print $2,$3,$4,$1,$5,$6}' $sample.circRNA_candidates.annotated.txt > $sample.circRNA_candidates.annotated.forLiftover.bed
-#awk 'OFS="\t"{if(NR>1) print $1,$2,$2+20,$4,$5,$6}' $sample.circRNA_candidates.annotated.forLiftover.bed > circRNA_candidates.annotated.forLiftover.start.bed
-#awk 'OFS="\t"{if(NR>1) print $1,$3-20,$3,$4,$5,$6}' $sample.circRNA_candidates.annotated.forLiftover.bed > circRNA_candidates.annotated.forLiftover.end.bed
-#
-#liftOver circRNA_candidates.annotated.forLiftover.start.bed $chain circRNA_candidates.annotated.start.$lift.bed circRNA_candidates.annotated.start.$lift.unmapped.bed
-#liftOver circRNA_candidates.annotated.forLiftover.end.bed $chain circRNA_candidates.annotated.end.$lift.bed circRNA_candidates.annotated.end.$lift.unmapped.bed
-#
-#cat circRNA_candidates.annotated.start.$lift.bed circRNA_candidates.annotated.end.$lift.bed | sort -k 4,4 | perl /home/mtv/backup/my-homemade-scripts/Nanopore/combine_liftOver_ends.pl > $sample.circRNA_candidates.annotated.combined.$lift.bed
-#bedtools intersect -wo -f 1.0 -F 1.0 -a $sample.circRNA_candidates.annotated.combined.$lift.bed -b $comparison_dataset > $sample.circRNA_candidates.annotated.combined.$lift.human-matches.bed
-#wc -l $sample.circRNA_candidates.annotated.combined.$lift.human-matches.bed $sample.circRNA_candidates.annotated.txt $comparison_dataset
-#
-#rm circRNA_candidates.annotated.forLiftover.start.bed circRNA_candidates.annotated.forLiftover.end.bed circRNA_candidates.annotated.start.*.bed circRNA_candidates.annotated.end.*.bed
-
 
