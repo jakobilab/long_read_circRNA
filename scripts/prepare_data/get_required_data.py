@@ -29,6 +29,7 @@ import yaml
 def is_writeable(directory):
     try:
         with open(os.path.join(directory, 'testfile'), 'w'):
+            os.remove("testfile")
             pass
     except PermissionError:
         return False
