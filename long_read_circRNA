@@ -36,7 +36,7 @@ Available subcommands:
         # Correct for inputs with - in the name
         command = command.replace("-","_")
         if not hasattr(self, command):
-            print("Unregcognized command")
+            print("Unrecognized command")
             parser.print_help()
             sys.exit(1)
         getattr(self, command)()
