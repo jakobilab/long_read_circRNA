@@ -29,7 +29,7 @@ import yaml
 def is_writeable(directory):
     try:
         with open(os.path.join(directory, 'testfile'), 'w'):
-            os.remove("testfile")
+            os.remove(os.path.join(directory, 'testfile'))
             pass
     except PermissionError:
         return False
@@ -298,8 +298,9 @@ def main():
     group.add_argument("-p",
                        "--path",
                        dest="path",
-                       help="Path to store the downloaded data files",
-                       required=True
+                       default="./data/",
+                       help="Path to store the downloaded data files"
+                       # required=True
                        )
 
     args = parser.parse_args(sys.argv[1:])
