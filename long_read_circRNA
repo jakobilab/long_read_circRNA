@@ -471,6 +471,8 @@ Adapted for circtools integration by Tobias Jakobi <tjakobi@arizona.edu>
         if args:
             parser = argparse.ArgumentParser(
                 description="Download required data from Nanopore circRNA pipeline")
+            # args = parser.parse_args(sys.argv[2:])
+
 
         # REQUIRED ARGUMENTS
         group = parser.add_argument_group("Required options")
@@ -490,14 +492,14 @@ Adapted for circtools integration by Tobias Jakobi <tjakobi@arizona.edu>
                            # required=True
                            )
 
-        args = parser.parse_args(sys.argv[1:])
+        args = parser.parse_args(sys.argv[2:])
 
         if not os.path.isfile(args.config):
             print("Configuration file not accessible.")
         else:
             process_data(configuration=args.config, data_path=args.path)
 
-    
+
     def check(self, args=True):
         if args:
             parser = argparse.ArgumentParser(
