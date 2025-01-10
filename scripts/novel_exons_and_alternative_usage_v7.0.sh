@@ -6,39 +6,29 @@
 
 
 sample=$1
-organism=$2
+genome=$2
 reference_path=$3
 scriptFolder=$4
+keep_temp=$6
+threads=$7
 
-echo $sample
-echo $organism
 echo
 date
 
-cd $5
+cd "$5" || exit
+
+
 
 # v6.1: bug fix and vastly improved method for generation of circRNA_exon_usage.txt
 # v7.0: Added the script previously called extra_stuff_v2.sh to this script, so now intron analyses, and phasing is done here
 
-if [ $organism == "human" ]
-then
-### Human
-genomeSize=$reference_path/human/hg19.chrom.sizes
-fa=$reference_path/human/hg19.fa
-exon_refseq=$reference_path/human/Human_refFlat_exon_hg19_Oct2018.sort.bed
-exon_original=$reference_path/human/gencode.v37lift37.annotation.gffread.exon.merge.bed
-exon_full=$reference_path/human/gencode.v37lift37.annotation.gffread.exon.bed
-intron_ucsc=$reference_path/human/hg19_ucsc_Intron_Gencode_V34lift37.bed
-elif [ $organism == "mouse" ]
-then
-### Mouse
-genomeSize=$reference_path/mouse/mm10.chrom.sizes
-fa=$reference_path/mouse/Mus_musculus.GRCm38.87.chr-fix.fa
-exon_refseq=$reference_path/mouse/Mouse_refFlat_exon_mm10_Oct2018.sort.bed
-exon_original=$reference_path/mouse/gencode.vM25.annotation.gffread.exon.merge.bed
-exon_full=$reference_path/mouse/gencode.vM25.annotation.gffread.exon.bed
-intron_ucsc=$reference_path/mouse/mm10_ucsc_Intron_Gencode_VM23.bed
-fi
+genomeSize=$reference_path/$genome/genome.chrom.sizes
+fa=$reference_path/$genome/genome.fa
+exon_refseq=$reference_path/$genome/refFlat.csv.sort.bed
+exon_original=$reference_path/$genome/gencode.csv.exon.merge.bed
+exon_full=$reference_path/$genome/gencode.csv.exon.bed
+intron_ucsc=$reference_path/$genome/gencode_intron.bed
+
 
 echo "Reformating annotation files"
 date

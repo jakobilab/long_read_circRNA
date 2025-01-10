@@ -4,44 +4,27 @@
 #SBATCH --mem=128g
 #SBATCH --time=72:00:00
 
-# This is version 5.5 of the Nanopore circRNA dataction pipeline
+# This is version 5.5 of the Nanopore circRNA datection pipeline
 # This version uses blat to map reads.  NanoFilt is used to trim low quality reads (q 7). Parallel BLAT is used to map nanopore reads to genome.
 
 data_folder=$1
 sample=$2
-species=$3
+genome=$3
 reference_path=$4
 scriptFolder=$5
+output_path=$6
+threads=$7
 
-mkdir $6
-cd $6
+mkdir "$output_path"
+cd "$output_path" || exit
 
-
-if [ "$species" = "human" ] ; then
-fa=$reference_path/human/hg19.fa
-mRNA=$reference_path/human/Human_refFlat_hg19_Oct2018.unique.merge.bed
-exon=$reference_path/human/Human_refFlat_exon_hg19_Oct2018.merge.bed
-single_exon=$reference_path/human/Human_refFlat_exon_hg19_Oct2018.sort.bed
-est=$reference_path/human/UCSC-EST-exons_hg19_09-2018.bed
-circBase=$reference_path/human/hsa_circRNA_complete.hg19.unique.sort.length.bed
-circAtlas=$reference_path/human/circAtlas2.0_June2019_human_hg19_circRNA.0-based.bed
-CIRCpedia=$reference_path/human/CIRCpedia_v2_June2019_human_hg19_All_circRNA.unique.bed
-genomeSize=$reference_path/human/hg19.chrom.sizes
-circRNA_prefix=hsa_circ_
-fi
-
-if [ "$species" = "mouse" ] ; then
-fa=$reference_path/mouse/Mus_musculus.GRCm38.87.chr-fix.fa
-mRNA=$reference_path/mouse/Mouse_refFlat_mm10_Oct2018.unique.merge.bed
-exon=$reference_path/mouse/Mouse_refFlat_exon_mm10_Oct2018.merge.bed
-single_exon=$reference_path/mouse/Mouse_refFlat_exon_mm10_Oct2018.sort.bed
-est=$reference_path/mouse/UCSC-EST-exons_mm10_09-2018.bed
-circBase=$reference_path/mouse/mmu_circRNA_complete.mm10lift.sort.length.bed
-circAtlas=$reference_path/mouse/circAtlas2.0_Aug2019_mouse_mm10_circRNA.0-based.bed
-CIRCpedia=$reference_path/mouse/CIRCpedia_v2_June2019_mouse_mm10_All_circRNA.unique.bed
-genomeSize=$reference_path/mouse/mm10.chrom.sizes
-circRNA_prefix=mmu_circ_
-fi
+fa=$reference_path/$genome/genome.fa
+mRNA=$reference_path/$genome/refFlat.csv.unique.bed
+exon=$reference_path/$genome/refFlat.csv.merged.bed
+single_exon=$reference_path/$genome/refFlat.csv.sort.bed
+est=$reference_path/$genome/est.bed
+genomeSize=$reference_path/$genome/genome.chrom.sizes
+circRNA_prefix="$genome"_circ_
 
 
 # Temp folder
@@ -67,7 +50,7 @@ date
 echo "Mapping with pblat - parallelized blat with multi-threads support (http://icebert.github.io/pblat/)"
 echo "lower case sequences in the genome file are masked out"
 echo "Showing a dot for every 50k sequences processed"
-pblat  -threads=8 -trimT -dots=50000 -mask=lower $fa $sample.fa $sample.psl
+pblat  -threads=$threads -trimT -dots=50000 -mask=lower $fa $sample.fa $sample.psl
 echo "Blat done"
 date
 
@@ -106,21 +89,21 @@ cat $sample.scan.circRNA.psl |python3 $scriptFolder/psl2bed12.py | sortBed > $sa
 
 
 
-echo
-echo "Making bam and bigWig (.bw) files for use in genome browsers"
-# All Blat mapped reads
-bedtools bedtobam -i $sample.psl.bed -bed12 -g $genomeSize > $sample.bam
-samtools sort $sample.bam > $sample.sort.bam
-samtools index $sample.sort.bam
-rm $sample.bam
-bamCoverage --binSize 1 --numberOfProcessors 8 -b $sample.sort.bam -o $sample.bw
-
-# Blat mapped BSJ spanning reads
-bedtools bedtobam -i $sample.scan.circRNA.psl.bed -bed12 -g $genomeSize > $sample.circRNA.bam
-samtools sort $sample.circRNA.bam > $sample.circRNA.sort.bam
-samtools index $sample.circRNA.sort.bam
-rm $sample.circRNA.bam
-bamCoverage --binSize 1 --numberOfProcessors 8 -b $sample.circRNA.sort.bam -o $sample.circRNA.bw
+#echo
+#echo "Making bam and bigWig (.bw) files for use in genome browsers"
+## All Blat mapped reads
+#bedtools bedtobam -i $sample.psl.bed -bed12 -g $genomeSize > $sample.bam
+#samtools sort $sample.bam > $sample.sort.bam
+#samtools index $sample.sort.bam
+#rm $sample.bam
+#bamCoverage --binSize 1 --numberOfProcessors $threads -b $sample.sort.bam -o $sample.bw
+#
+## Blat mapped BSJ spanning reads
+#bedtools bedtobam -i $sample.scan.circRNA.psl.bed -bed12 -g $genomeSize > $sample.circRNA.bam
+#samtools sort $sample.circRNA.bam > $sample.circRNA.sort.bam
+#samtools index $sample.circRNA.sort.bam
+#rm $sample.circRNA.bam
+#bamCoverage --binSize 1 --numberOfProcessors $threads -b $sample.circRNA.sort.bam -o $sample.circRNA.bw
 
 
 
@@ -218,7 +201,7 @@ bedtools map -f 1.0 -F 1.0 -c 4,7,8,9,10,11,5,5,5 -o count,mean,mean,mean,mean,m
 echo
 cat base_list_exon-match.annot.prefilter.bed | grep -v chrM | grep -v Rn45s > $sample.base_list_exon-match.annot.bed
 
-rm base_list_exon-match.temp base_list_exon-match.temp3.bed base_list_exon-match.temp4.bed base_list_exon-match.annot.prefilter.bed
+rm base_list_exon-match.temp base_list_exon-match.temp4.bed base_list_exon-match.annot.prefilter.bed
 
 # For v 5.5 I increased the stringency. See below
 ### for the reads that do not match exons I check for similarity to circBase, circAtlas or CIRCpedia circRNA. If this is found, the annotated circRNA entry defines boundaries.
@@ -270,7 +253,7 @@ cat no_exon_match_reads.bed | uniq | grep "\.[[:space:]]\.[[:space:]]\." | sortB
 
 
 ## Delete temp files
-rm temp.circ.hits $sample.scan.circRNA.psl.annot.combine.sort.temp temp_exon-ends_nohit_uniq $sample.scan.circRNA.psl.annot.combine.correct.full.bed circRNA_name.temp $sample.scan.circRNA.psl.annot.combine.correct.bed  $sample.scan.circRNA.psl.annot.combine.sort.temp2 $sample.scan.circRNA.psl.annot.combine.sort.temp3
+rm temp.circ.hits $sample.scan.circRNA.psl.annot.combine.sort.temp temp_exon-ends_nohit_uniq $sample.scan.circRNA.psl.annot.combine.correct.full.bed circRNA_name.temp $sample.scan.circRNA.psl.annot.combine.correct.bed
 rm -r $temp_sort
 rm temp* $sample.scan.Potential_multi-round_circRNA.bam $sample.scan.Potential_multi-round_circRNA.psl.bed $sample.scan.Potential_multi-round_circRNA.psl
 #rm $sample.scan.circRNA.psl.annot.combine.circID.bed $sample.scan.circRNA.psl.annot.combine.sort.txt $sample.base_list_exon-match.annot.bed
@@ -278,9 +261,9 @@ rm $sample.scan.Potential_multi-round_circRNA.psl.merge.bed $sample.scan.Potenti
 rm $sample.scan.Potential_multi-round_circRNA.sort.bam
 #rm $sample.scan.circRNA.bam $sample.scan.circRNA.psl.annot.bed $sample.scan.circRNA.psl.annot.txt $sample.scan.circRNA.psl $sample.sort.bam $sample.scan.circRNA.psl.bed
 #rm $sample.sort.bam.bai $sample.psl.bed $sample.fa.fai $sample.psl $sample.fa no_exon_no_circRNA.bed
-rm base_list_exon-match.bed no_exon_match_reads.bed circBase.no_exon_match_reads_circIDs.txt circAtlas.no_exon_match_reads_circIDs.txt CIRCpedia.no_exon_match_reads_circIDs.txt
+rm base_list_exon-match.bed no_exon_match_reads.bed
 #rm base_list_no-exon.cirBaseID.annot.prefilter.bed
-rm mappings_per_read.txt $sample.scan.psl $sample.circBase_no_exon_match_reads.bed #$sample.base_list_no-exon.cirBaseID.annot.bed
+rm mappings_per_read.txt $sample.scan.psl #$sample.base_list_no-exon.cirBaseID.annot.bed
 
 echo
 date

@@ -12,14 +12,14 @@ class ArgumentCaller():
     
     def __init__(self):
         print(
-"""\033[1m  
+"""
   _                    ___             _      _        ___ _  _   _   
  | |   ___ _ _  __ _  | _ \___ __ _ __| |  __(_)_ _ __| _ \ \| | /_\  
  | |__/ _ \ ' \/ _` | |   / -_) _` / _` | / _| | '_/ _|   / .` |/ _ \ 
  |____\___/_||_\__, | |_|_\___\__,_\__,_| \__|_|_| \__|_|_\_|\_/_/ \_\ 
                |___/                                                    
 
-Version: v{}\033[0m""".format(self.__version__))
+Version: v{}""".format(self.__version__))
         
         parser = argparse.ArgumentParser(
             description="Description: CircRNA detection in nanopore data",
@@ -43,16 +43,17 @@ Available subcommands:
         
     def run(self):
         parser = argparse.ArgumentParser(
-            description="Run the program for detecting circRNAs in nanopore data",
+            description="Run the program for detecting circRNAs in Oxford Nanopore data",
             prog="long_read_circRNA"
             #usage="%(prog)s run sample [options]"
         )
         
         parser.add_argument('sample', help="Provide a sample input .fq.gz file that should be processed by the tool")
         parser.add_argument('--reference-path', default="./data", help="Provide a path for where the reference data is located. Default is './data'.")
-        parser.add_argument('--species', default='human', choices=['human', 'mouse'], help="Select which species the sample that is from, and specify which species reference files should be used. Default is set to human.")
+        parser.add_argument('--genome', choices=['hg19', 'hg38'], help="Select which genome build the sample that is from, and specify which genome reference files should be used. Required.")
         parser.add_argument('--script-path', default="~/long_read_circRNA/scripts", help="Specify where the long_read_circRNA scripts are located. By default it assumes that they are located at '~/long_read_circRNA/scripts'.")
         parser.add_argument('--output-path', '-o', default=".", help="Provide a path for where the output should be saved. Default is the current directory. This will use the output-path and create a directory in that path based on the sample name provided.")
+        parser.add_argument('--threads',  default=4, type=int, help="Number of threads for parallel steps.")
         parser.add_argument('--dry-run', action="store_true", help="Perform all of the input checks without starting the detection scripts")
         parser.add_argument('--keep-temp', action="store_true", help="Keep all of the temporary files.")
         
@@ -61,7 +62,8 @@ Available subcommands:
         self.check_installation(args=False)
     
         reference_path = args.reference_path
-        species = args.species
+        genome = args.genome
+        threads = args.threads
         
         # Check if reference_path exists
         if not os.path.exists(reference_path):
@@ -69,18 +71,18 @@ Available subcommands:
         # Check if reference_path is a directory:
         if not os.path.isdir(reference_path):
             raise Exception("'{}' is not a directory! Please provide a directory that contains the reference data".format(reference_path))
-        # Check if reference_path contains species in the end
-        if os.path.basename(reference_path)==species:
-            raise Exception("Looks like you have provided the direct path to the species reference directory '{}'. Please simply provide data directory '{}'".format(
+        # Check if reference_path contains genome in the end
+        if os.path.basename(reference_path)==genome:
+            raise Exception("Looks like you have provided the direct path to the genome directory '{}'. Please simply provide data directory '{}'".format(
                 reference_path, os.path.dirname(reference_path)
             ))
-        # Check if reference_path + species exists
-        # if not os.path.exists(os.path.join(reference_path, species)):
-        #     raise Exception("The species subpath {} in the directory {} does not exists".format(species, reference_path))
-        # # Check if the reference_path + species is a directory
-        # if not os.path.isdir(os.path.join(reference_path, species)):
-        #     raise Exception("The species subpath {} in the directory {} is not a directory!".format(species, reference_path))
-        #
+        # Check if reference_path + genome exists
+        if not os.path.exists(os.path.join(reference_path, genome)):
+            raise Exception("The genome sub-path {} in the directory {} does not exists".format(genome, reference_path))
+        # Check if the reference_path + genome is a directory
+        if not os.path.isdir(os.path.join(reference_path, genome)):
+            raise Exception("The genome sub-path {} in the directory {} is not a directory!".format(genome, reference_path))
+        
         # Check if sample exists
         if not os.path.exists(args.sample):
             raise Exception("Sample file '{}' does not exist!".format(args.sample))
@@ -111,10 +113,10 @@ Available subcommands:
         output_path = os.path.join(output_path, sample_name)
         
         print("\033[1mStarting process with the following settings\033[0m")
-        print("\033[1m\tSample name:{}\033[0m".format(sample_name))
+        print("\033[1m\tSample name: {}\033[0m".format(sample_name))
         print("\033[1m\tReference path: {}\033[0m".format(reference_path))
         print("\033[1m\tSample path: {}\033[0m".format(sample_path))
-        print("\033[1m\tSpecies: {}\033[0m".format(species))
+        print("\033[1m\tgenome: {}\033[0m".format(genome))
         print("\033[1m\tScript-path: {}\033[0m".format(script_path))
         print("\033[1m\tOutput-path: {}\033[0m".format(output_path))
         
@@ -124,7 +126,7 @@ Available subcommands:
             # Main process for circRNA detection
             print("\033[1m")
             subprocess.run(["bash", os.path.join(script_path, "blat_nanopore_v5.5.sh"), 
-                            sample_path, sample_name, species, reference_path, script_path, output_path])
+                            sample_path, sample_name, genome, reference_path, script_path, output_path, str(threads)])
             print("\033[0m")
         
             print("\033[1mcircRNA detection has finished\033[0m")
@@ -138,7 +140,7 @@ Available subcommands:
         
             print("\033[1m")
             subprocess.run(["bash", os.path.join(script_path, "novel_exons_and_alternative_usage_v7.0.sh"), 
-                        sample_name, species, reference_path, script_path, output_path, keep_temp])
+                        sample_name, genome, reference_path, script_path, output_path, keep_temp, str(threads)])
             print("\033[0m")
         
             print("\033[1mLong_read_circRNA has finished!\033[0m")
