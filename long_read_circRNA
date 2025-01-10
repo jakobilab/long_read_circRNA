@@ -53,7 +53,6 @@ Adapted for circtools integration by Tobias Jakobi <tjakobi@arizona.edu>
         parser = argparse.ArgumentParser(
             description="Run the program for detecting circRNAs in Oxford Nanopore data",
             prog="long_read_circRNA"
-            #usage="%(prog)s run sample [options]"
         )
 
         parser.add_argument(
