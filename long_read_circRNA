@@ -109,12 +109,12 @@ Adapted for circtools integration by Tobias Jakobi <tjakobi@arizona.edu>
 
         # Check if reference_path + genome exists
         if not os.path.exists(os.path.join(reference_path, genome)):
-            print("Error: The genome sub-path {} in the directory {} does not exists".format(genome, reference_path))
+            print("Error: The genome build {} in the directory {} does not exist".format(genome, reference_path))
             exit(-1)
 
         # Check if the reference_path + genome is a directory
         if not os.path.isdir(os.path.join(reference_path, genome)):
-            print("Error: The genome sub-path {} in the directory {} is not a directory!".format(genome, reference_path))
+            print("Error: The genome build {} in the directory {} is not a directory!".format(genome, reference_path))
             exit(-1)
 
         # Check if sample exists
