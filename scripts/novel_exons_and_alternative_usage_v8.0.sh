@@ -44,7 +44,7 @@ date
 echo
 echo "Producing summary of exons"
 
-bedtools bed12tobed6 -i $sample.scan.circRNA.psl.bed | awk 'OFS="\t"{print $4,$2,$3,$1,$5,$6}' | grep -v chrM | sortBed > $sample.scan.circRNA.psl.split.bed
+bedtools bed12tobed6 -i $sample.scan.circRNA.psl.bed | awk 'OFS="\t"{print $4,$2,$3,$1,$5,$6}' | grep -v chrM | bedtools sort > $sample.scan.circRNA.psl.split.bed
 bedtools merge -s -d 10 -c 4,6 -o distinct -i $sample.scan.circRNA.psl.split.bed | awk 'OFS="\t"{print $4,$2,$3,$3-$2,$1,$5}' | sed 's/~/\t/g' | awk 'OFS="\t"{print $1,$2,$3,$5"~"$1"~"$2"~"$3"~"$7,$4,$5}' > $sample.scan.circRNA.psl.split.merge.bed
 #cat $genomeSize
 bedtools flank -g $genomeSize -b 2 -i $sample.scan.circRNA.psl.split.merge.bed > $sample.scan.circRNA.psl.split.merge.flank2.bed
@@ -53,9 +53,9 @@ cat $sample.scan.circRNA.psl.split.merge.flank2.fa | sed ':a;N;$!ba;s/+\n/+\t/g'
 cat $sample.scan.circRNA.psl.split.merge.flank2.fa | sed ':a;N;$!ba;s/+\n/+\t/g' | sed ':a;N;$!ba;s/-\n/-\t/g' | sed 's/^>//g' | python3 $scriptFolder/flank2_combine.py | awk 'OFS="\t"{print $6,$7}' | sort | uniq -c | sort -nrk 1,1 > $sample.scan.circRNA.psl.split.merge.flank2.fa.bed.count
 cat $sample.scan.circRNA.psl.split.merge.flank2.fa.bed | grep -P "AGGT$" > $sample.scan.circRNA.psl.split.merge.flank2.AGGT.bed
 cat $sample.scan.circRNA.psl.split.merge.flank2.fa.bed | grep -P "ACCT$" > $sample.scan.circRNA.psl.split.merge.flank2.ACCT.bed
-cat $sample.scan.circRNA.psl.split.merge.flank2.AGGT.bed | awk 'OFS="\t"{print $1,$2,$3}' | sort -nk 3,3 | sort -nk 2,2 | sort -k 1,1 | uniq -c | awk 'OFS="\t"{print $2,$3,$4,"novelExon",$1,"+"}' | sortBed > $sample.scan.circRNA.psl.split.merge.flank2.posExons.bed
-cat $sample.scan.circRNA.psl.split.merge.flank2.ACCT.bed | awk 'OFS="\t"{print $1,$2,$3}' | sort -nk 3,3 | sort -nk 2,2 | sort -k 1,1 | uniq -c | awk 'OFS="\t"{print $2,$3,$4,"novelExon",$1,"-"}' | sortBed > $sample.scan.circRNA.psl.split.merge.flank2.negExons.bed
-cat $sample.scan.circRNA.psl.split.merge.flank2.posExons.bed $sample.scan.circRNA.psl.split.merge.flank2.negExons.bed | sortBed | awk 'OFS="\t"{print $1,$2,$3,$5"read_"$4"_"$1":"$2"-"$3,$5,$6}' > $sample.scan.circRNA.psl.split.merge.flank2.allExons.bed
+cat $sample.scan.circRNA.psl.split.merge.flank2.AGGT.bed | awk 'OFS="\t"{print $1,$2,$3}' | sort -nk 3,3 | sort -nk 2,2 | sort -k 1,1 | uniq -c | awk 'OFS="\t"{print $2,$3,$4,"novelExon",$1,"+"}' | bedtools sort > $sample.scan.circRNA.psl.split.merge.flank2.posExons.bed
+cat $sample.scan.circRNA.psl.split.merge.flank2.ACCT.bed | awk 'OFS="\t"{print $1,$2,$3}' | sort -nk 3,3 | sort -nk 2,2 | sort -k 1,1 | uniq -c | awk 'OFS="\t"{print $2,$3,$4,"novelExon",$1,"-"}' | bedtools sort > $sample.scan.circRNA.psl.split.merge.flank2.negExons.bed
+cat $sample.scan.circRNA.psl.split.merge.flank2.posExons.bed $sample.scan.circRNA.psl.split.merge.flank2.negExons.bed | bedtools sort | awk 'OFS="\t"{print $1,$2,$3,$5"read_"$4"_"$1":"$2"-"$3,$5,$6}' > $sample.scan.circRNA.psl.split.merge.flank2.allExons.bed
 echo
 echo "Number of exons"
 wc -l $sample.scan.circRNA.psl.split.merge.flank2.posExons.bed $sample.scan.circRNA.psl.split.merge.flank2.negExons.bed $sample.scan.circRNA.psl.split.merge.flank2.allExons.bed
@@ -84,24 +84,24 @@ rm $sample.novel.exons.2reads.filter00.bed
 
 echo
 echo "Getting 2read circRNA info for use with NMD test"
-intersectBed -nonamecheck -wo -a $sample.novel.exons.2reads.filter.bed -b $exon | awk 'OFS="\t"{print $1,$2,$3,$4,$7,$8,$9,$10,$3-$2,$9-$8,($9-$8)-($3-$2),(($9-$8)-($3-$2))/3}' > $sample.novel.cryptic.spliced.exons.txt
+bedtools intersect -nonamecheck -wo -a $sample.novel.exons.2reads.filter.bed -b $exon | awk 'OFS="\t"{print $1,$2,$3,$4,$7,$8,$9,$10,$3-$2,$9-$8,($9-$8)-($3-$2),(($9-$8)-($3-$2))/3}' > $sample.novel.cryptic.spliced.exons.txt
 
 
 # Combine novel exons with atleast 2 supporting reads (not found in Gencode) with all Gencode exons
-cat $exon $sample.novel.exons.2reads.filter.bed | sortBed | uniq | awk 'OFS="\t"{print $1,$2,$3,$4,$5,$6}' > New_exon_and_Gencode_exon.bed
+cat $exon $sample.novel.exons.2reads.filter.bed | bedtools sort | uniq | awk 'OFS="\t"{print $1,$2,$3,$4,$5,$6}' > New_exon_and_Gencode_exon.bed
 
 bedtools map -nonamecheck -split -c 4 -o distinct -a $sample.scan.circRNA.psl.bed -b New_exon_and_Gencode_exon.bed > $sample.scan.circRNA.psl.circRNA-exons.bed
 bedtools map -nonamecheck -c 4 -o distinct -a $sample.scan.circRNA.psl.circRNA-exons.bed -b New_exon_and_Gencode_exon.bed > $sample.scan.circRNA.psl.genomic-exons.bed
 
 # Prepare for comparison
-cat $sample.scan.circRNA.psl.genomic-exons.bed | awk 'OFS="\t"{print $1,$2,$3,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$4}' | sed 's/~/\t/g'| awk 'OFS="\t"{print $14,$2,$3,$1,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13}' | sortBed > temp.genomic-exons.bed
+cat $sample.scan.circRNA.psl.genomic-exons.bed | awk 'OFS="\t"{print $1,$2,$3,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$4}' | sed 's/~/\t/g'| awk 'OFS="\t"{print $14,$2,$3,$1,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13}' | bedtools sort > temp.genomic-exons.bed
 
-cat $sample.scan.circRNA.psl.annot.combine.txt | sortBed > $sample.scan.circRNA.psl.annot.combine.sort.txt
+cat $sample.scan.circRNA.psl.annot.combine.txt | bedtools sort > $sample.scan.circRNA.psl.annot.combine.sort.txt
 
-cat $sample.circRNA_candidates.annotated.txt | awk 'NR>1,OFS="\t"{print $2,$3,$4,$1,$6,$7,$10}' | sortBed > circRNA_candidates.annotated.txt.forExonAnalysis.bed
-bedtools map -nonamecheck -f 0.95 -F 0.95 -c 4,7 -o distinct -a $sample.scan.circRNA.psl.annot.combine.sort.txt -b circRNA_candidates.annotated.txt.forExonAnalysis.bed | awk 'OFS="\t"{print $4,$2,$3,$1,0,"+",$10}' | sed 's/,circ/\t/g' | awk 'OFS="\t"{print $1,$2,$3,$4,$5,$6,$7}' | sortBed > reads.annot.temp.bed
+cat $sample.circRNA_candidates.annotated.txt | awk 'NR>1,OFS="\t"{print $2,$3,$4,$1,$6,$7,$10}' | bedtools sort > circRNA_candidates.annotated.txt.forExonAnalysis.bed
+bedtools map -nonamecheck -f 0.95 -F 0.95 -c 4,7 -o distinct -a $sample.scan.circRNA.psl.annot.combine.sort.txt -b circRNA_candidates.annotated.txt.forExonAnalysis.bed | awk 'OFS="\t"{print $4,$2,$3,$1,0,"+",$10}' | sed 's/,circ/\t/g' | awk 'OFS="\t"{print $1,$2,$3,$4,$5,$6,$7}' | bedtools sort > reads.annot.temp.bed
 
-bedtools map -nonamecheck -c 7 -o distinct -a temp.genomic-exons.bed -b reads.annot.temp.bed | awk 'OFS="\t"{print $4,$2,$3,$1,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15}' | sortBed > $sample.scan.circRNA.psl.genomic-exons.annot.bed
+bedtools map -nonamecheck -c 7 -o distinct -a temp.genomic-exons.bed -b reads.annot.temp.bed | awk 'OFS="\t"{print $4,$2,$3,$1,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15}' | bedtools sort > $sample.scan.circRNA.psl.genomic-exons.annot.bed
 
 rm reads.annot.temp.bed temp.genomic-exons.bed $sample.scan.circRNA.psl.split.merge.flank2.posExons.bed $sample.scan.circRNA.psl.split.merge.flank2.negExons.bed
 rm $sample.scan.circRNA.psl.annot.combine.sort.txt
@@ -218,22 +218,22 @@ echo "Get introns in circRNAs"
 echo "This part was changed in v2"
 ## Make intron file:
 # Getting unique introns that are located in circRNA expression regions
-cat $intron_ucsc | awk 'OFS="\t"{print $1,$2,$3,"intron",0,$6}' | sortBed | uniq > introns.uniq.bed
-cat $sample.circRNA_candidates.annotated.txt | grep -v internal_circRNA_name | awk 'OFS="\t"{print $2,$3,$4,$1,$6,$7}' | sortBed | bedtools map -c 4 -o distinct -a introns.uniq.bed -b - -nonamecheck > $sample.introns.uniq.circ.bed
+cat $intron_ucsc | awk 'OFS="\t"{print $1,$2,$3,"intron",0,$6}' | bedtools sort | uniq > introns.uniq.bed
+cat $sample.circRNA_candidates.annotated.txt | grep -v internal_circRNA_name | awk 'OFS="\t"{print $2,$3,$4,$1,$6,$7}' | bedtools sort | bedtools map -c 4 -o distinct -a introns.uniq.bed -b - -nonamecheck > $sample.introns.uniq.circ.bed
 
 # Remove introns that overlap an exon from Gencode
-bedtools subtract -a introns.uniq.bed -b exon_annotation.reformat.bed -nonamecheck | sortBed | uniq | awk 'OFS="\t"{print $1,$2,$3,$4"_"$1":"$2"-"$3,1,$6}' | sortBed > introns.uniq.exon_remove.bed
+bedtools subtract -a introns.uniq.bed -b exon_annotation.reformat.bed -nonamecheck | bedtools sort | uniq | awk 'OFS="\t"{print $1,$2,$3,$4"_"$1":"$2"-"$3,1,$6}' | bedtools sort > introns.uniq.exon_remove.bed
 
 
 bedtools coverage -a introns.uniq.exon_remove.bed -b $sample.psl.bed > $sample.introns.uniq.exon_remove.coverage.bed
-cat $sample.circRNA_candidates.annotated.txt | grep -v internal_circRNA_name | awk 'OFS="\t"{print $2,$3,$4,$1,$6,$7}' | sortBed | bedtools map -c 4 -o distinct -a $sample.introns.uniq.exon_remove.coverage.bed -b - | awk 'OFS="\t"{print $0}' > $sample.introns.uniq.exon_remove.coverage.circ.bed
+cat $sample.circRNA_candidates.annotated.txt | grep -v internal_circRNA_name | awk 'OFS="\t"{print $2,$3,$4,$1,$6,$7}' | bedtools sort | bedtools map -c 4 -o distinct -a $sample.introns.uniq.exon_remove.coverage.bed -b - | awk 'OFS="\t"{print $0}' > $sample.introns.uniq.exon_remove.coverage.circ.bed
 cat $sample.introns.uniq.exon_remove.coverage.circ.bed | grep circ_ >  $sample.introns.uniq.exon_remove.coverage.onlyCirc.bed
 # Mapping novel exons on introns
 # This step fails on bedtools==2.30.0!
 mapBed -s -F 1.0 -c 4 -o distinct_only -a $sample.introns.uniq.exon_remove.coverage.onlyCirc.bed -b $sample.novel.exons.2reads.bed > $sample.introns.uniq.exon_remove.coverage.onlyCirc.novelExonMap.bed
 
 # List of all unique introns in circRNA regions:
-cat $sample.circRNA_candidates.annotated.txt | grep -v internal_circRNA_name | awk 'OFS="\t"{print $2,$3,$4,$1,$6,$7}' | intersectBed -s -u -a introns.uniq.bed -b - > $sample.all_circRNA_introns.bed
+cat $sample.circRNA_candidates.annotated.txt | grep -v internal_circRNA_name | awk 'OFS="\t"{print $2,$3,$4,$1,$6,$7}' | bedtools intersect -s -u -a introns.uniq.bed -b - > $sample.all_circRNA_introns.bed
 
 # This is a workaround for the bedtools >=2.30.0 error "***** ERROR: illegal number "1.0000000". Exiting..."
 # By adding a 13th column we make sure bedtools does not assumes this is a valid BED12 file
