@@ -31,10 +31,10 @@ Adapted for circtools integration by Tobias Jakobi <tjakobi@arizona.edu>
             description="Description: CircRNA detection in nanopore data",
             usage='''%(prog)s <command> [args]
             
-                    Available subcommands:
-                        run                 Main command for finding circRNAs in long read nanopore data
-                        download            Download any required data for references and prepare
-                        check-installation  Check if all of the required software is available
+                    Available sub-commands:
+                        run         Main command for finding circRNAs in long read nanopore data
+                        download    Download any required data for references and prepare
+                        check       Check if all of the required software is available
                     ''')
 
         parser.add_argument('command', help='Specify which subcommand should be used')
@@ -55,32 +55,47 @@ Adapted for circtools integration by Tobias Jakobi <tjakobi@arizona.edu>
             prog="long_read_circRNA"
             #usage="%(prog)s run sample [options]"
         )
-        
-        parser.add_argument('sample',
-                            help="Provide a sample input .fq.gz file that should be processed by the tool")
-        parser.add_argument('--reference-path',
-                            default="./data",
-                            help="Provide a path for where the reference data is located. Default is './data'.")
-        parser.add_argument('--genome',
-                            choices=['hg19', 'hg38', 'mm9', 'mm10'],
-                            help="Required. Select which genome build the sample that is from, and specify which genome reference files should be used.",
-                            required=True)
-        parser.add_argument('--script-path',
-                            default="~/long_read_circRNA/scripts",
-                            help="Specify where the long_read_circRNA scripts are located. By default it assumes that they are located at '~/long_read_circRNA/scripts'.")
-        parser.add_argument('--output-path', '-o',
-                            default=".",
-                            help="Provide a path for where the output should be saved. Default is the current directory. This will use the output-path and create a directory in that path based on the sample name provided.")
-        parser.add_argument('--threads',
-                            default=4,
-                            type=int,
-                            help="Number of threads for parallel steps.")
-        parser.add_argument('--dry-run',
-                            action="store_true",
-                            help="Perform all of the input checks without starting the detection scripts")
-        parser.add_argument('--keep-temp',
-                            action="store_true",
-                            help="Keep all of the temporary files.")
+
+        parser.add_argument(
+            'sample',
+            help="Provide a sample input .fq.gz file that should be processed.")
+        parser.add_argument(
+            '-r',
+            '--reference-path',
+            default="./data",
+            help="Provide a path for where the reference data is located. Default is './data'.")
+        parser.add_argument(
+            '-g',
+            '--genome',
+            choices=['hg19', 'hg38', 'mm9', 'mm10'],
+            help="Required. Select which genome build the sample that is from, and specify which genome reference files should be used.",
+            required=True)
+        parser.add_argument(
+            '-s',
+            '--script-path',
+            default="~/long_read_circRNA/scripts",
+            help="Specify where the long_read_circRNA scripts are located. Default: '~/long_read_circRNA/scripts'.")
+        parser.add_argument(
+            '-o',
+            '--output-path',
+            default=".",
+            help="Provide a path for where the output should be saved. Default is the current directory.")
+        parser.add_argument(
+            '-t',
+            '--threads',
+            default=4,
+            type=int,
+            help="Number of threads for parallel steps. Default: 4.")
+        parser.add_argument(
+            '-d',
+            '--dry-run',
+            action="store_true",
+            help="Perform all of the input checks without starting the detection scripts")
+        parser.add_argument(
+            '-k',
+            '--keep-temp',
+            action="store_true",
+            help="Keep all of the temporary files.")
         
         args = parser.parse_args(sys.argv[2:])
     
@@ -97,24 +112,20 @@ Adapted for circtools integration by Tobias Jakobi <tjakobi@arizona.edu>
         
         # Check if reference_path is a directory:
         if not os.path.isdir(reference_path):
-            print("Error: '{}' is not a directory! Please provide a directory that contains the reference data".format(reference_path))
+            print("Error: '{}' is not a directory! Please provide a directory that contains the reference data.".format(reference_path))
             exit(-1)
 
         # Check if reference_path contains genome in the end
         if os.path.basename(reference_path)==genome:
-            print("Error: Looks like you have provided the direct path to the genome directory '{}'. Please simply provide data directory '{}'".format(
+            print("Error: Looks like you have provided the direct path to the genome directory '{}'. Please simply provide data directory '{}'.".format(
                 reference_path, os.path.dirname(reference_path)
             ))
             exit(-1)
 
         # Check if reference_path + genome exists
         if not os.path.exists(os.path.join(reference_path, genome)):
-            print("Error: The genome build {} in the directory {} does not exist".format(genome, reference_path))
-            exit(-1)
-
-        # Check if the reference_path + genome is a directory
-        if not os.path.isdir(os.path.join(reference_path, genome)):
-            print("Error: The genome build {} in the directory {} is not a directory!".format(genome, reference_path))
+            print("Error: The genome build {} in the directory {} does not exist!".format(genome, reference_path))
+            print("Note: You might need to download genome data first using the download command.")
             exit(-1)
 
         # Check if sample exists
