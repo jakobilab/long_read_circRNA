@@ -207,6 +207,10 @@ def postprocess_gencode(gencode_file: str):
         file.write(str(virtual_bed_file_merged))
 
 def process_data(configuration: str, data_path: str):
+
+    # build internal path from config name:
+    configuration = "long_read_circRNA/config/" + configuration +".yml"
+
     with open(configuration, 'r') as config_file:
         config = (yaml.safe_load(config_file))
 
@@ -480,7 +484,8 @@ Adapted for circtools integration by Tobias Jakobi <tjakobi@arizona.edu>
         group.add_argument("-c",
                            "--config",
                            dest="config",
-                           help="Path to the configuration file, e.g. hg19.yml",
+                           help="Path to the configuration file, e.g. hg19",
+                           choices=['hg19', 'hg38', 'mm9', 'mm10'],
                            required=True
                            )
 
