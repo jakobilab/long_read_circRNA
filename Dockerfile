@@ -1,4 +1,4 @@
-FROM ubuntu:latest
+FROM ubuntu-22.04
 
 LABEL stage=builder
 
@@ -61,10 +61,9 @@ RUN ln -s /app/long_read_circRNA /usr/local/bin/
 RUN NanoFilt --version
 RUN bedtools --version
 RUN samtools --version
-#RUN long_read_circRNA
 RUN pblat
+RUN long_read_circRNA check
 
 RUN mkdir /data/
 
 ENTRYPOINT ["long_read_circRNA"]
-
